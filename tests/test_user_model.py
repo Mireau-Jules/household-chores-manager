@@ -287,7 +287,9 @@ class CreateSuperuserTests(TestCase):
     def test_case_variant_is_rejected_before_the_password_is_asked_for(self):
         get_user_model().objects.create_user('sam@example.com', PASSWORD)
         with (
-            mock.patch('builtins.input', side_effect=['SAM@example.com', 'r@example.com']),
+            mock.patch(
+                'builtins.input', side_effect=['SAM@example.com', 'r@example.com']
+            ),
             mock.patch('getpass.getpass', return_value=PASSWORD) as getpass,
         ):
             call_command(

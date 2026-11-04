@@ -57,7 +57,9 @@ class User(AbstractUser):
 
     class Meta(AbstractUser.Meta):
         constraints = [
-            models.UniqueConstraint(Lower('email'), name='accounts_user_email_ci_unique'),
+            models.UniqueConstraint(
+                Lower('email'), name='accounts_user_email_ci_unique'
+            ),
             models.CheckConstraint(
                 condition=~models.Q(email=''), name='accounts_user_email_not_empty'
             ),

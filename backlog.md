@@ -106,11 +106,11 @@ Depends on: T0.3
 - Add a GitHub Actions workflow that runs lint, `manage.py makemigrations --check` and pytest.
 
 **Done when:**
-- [ ] `ruff` is a dev dependency configured in `pyproject.toml`, `uv lock --check` passes, and `uv run ruff check .` exits 0.
-- [ ] A workflow in `.github/workflows/` triggers on `pull_request` with no branch filter.
-- [ ] The workflow installs from `uv.lock`, then runs `ruff check`, `manage.py makemigrations --check` and `pytest`. None of these steps uses `continue-on-error`, so a failure in any of them fails the run.
-- [ ] The workflow defines the environment values it needs and uses no GitHub repository secrets. With only those values set and no `.env` file, its three commands exit 0 locally.
-- [ ] In a throwaway copy of the repository outside the working tree, adding a model field without a migration makes the workflow's `makemigrations --check` command exit non-zero.
+- [x] `ruff` is a dev dependency configured in `pyproject.toml`, `uv lock --check` passes, and `uv run ruff check .` exits 0.
+- [x] A workflow in `.github/workflows/` triggers on `pull_request` with no branch filter.
+- [x] The workflow installs from `uv.lock`, then runs `ruff check`, `manage.py makemigrations --check` and `pytest`. None of these steps uses `continue-on-error`, so a failure in any of them fails the run.
+- [x] The workflow defines the environment values it needs and uses no GitHub repository secrets. With only those values set and no `.env` file, its three commands exit 0 locally.
+- [x] In a throwaway copy of the repository outside the working tree, adding a model field without a migration makes the workflow's `makemigrations --check` command exit non-zero.
 
 ### T0.5 Build the base layout · P0 · S
 Depends on: T0.1
