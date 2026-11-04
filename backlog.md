@@ -14,8 +14,8 @@ Source: [`_docs/plan.md`](_docs/plan.md). References such as §7.5 point to sect
 
 | Epic | Plan phase | Goal | Tasks | Sizes |
 |---|---|---|---|---|
-| E0 Foundation | Added | Make the project ready for feature work | 5 | 4 S, 1 M |
-| E1 Accounts and Households | Phase 1 | Users can register and create a household | 6 | 3 S, 3 M |
+| E0 Foundation | Added | Make the project ready for feature work | 5 | 5 S |
+| E1 Accounts and Households | Phase 1 | Users can register and create a household | 7 | 4 S, 3 M |
 | E2 Invitations and Members | Phase 2 | Users can join, leave and transfer the admin role | 6 | 2 S, 4 M |
 | E3 Chores | Phase 3 | Admins can manage daily chores | 3 | 1 S, 2 M |
 | E4 Rotation and Scheduling | Phase 4 | Assignments are generated automatically and fairly | 6 | 3 S, 2 M, 1 L |
@@ -32,7 +32,7 @@ Source: [`_docs/plan.md`](_docs/plan.md). References such as §7.5 point to sect
 
 ## Decisions
 
-The plan left these points open or in tension. All nine were confirmed on 2026-11-03, and the tasks below follow them.
+The plan left these points open or in tension. All thirteen were confirmed on 2026-11-03, and the tasks below follow them.
 
 | # | Question | Decision | Affects |
 |---|---|---|---|
@@ -45,19 +45,30 @@ The plan left these points open or in tension. All nine were confirmed on 2026-1
 | D7 | **Can an admin who is the only member ever leave?** There is nobody to transfer the role to (§7.1), and the plan has no household deletion. | Block leaving in the MVP and show an explanation. Add household deletion later. | T2.5 |
 | D8 | **How do people log in?** | Use email and password, with a custom user model built on Django's built-in authentication. | T0.2, T1.1 |
 | D9 | **Which environments will the app run in?** | SQLite for local development now. A Docker image on Render with PostgreSQL for production later. | T0.1, T8.1–T8.3 |
+| D10 | **What does "mobile-friendly" mean?** The plan doesn't set a width. | Pages have no horizontal scrolling at a minimum width of 360 px. | T0.5, T1.7 |
+| D11 | **How do members identify each other?** D8 covers login only, but §7.8 and Screens 3, 6 and 8 show the assigned member. | Registration requires a display name, which is shown everywhere instead of the email. | T1.1, T2.4, T5.3, T6.1 |
+| D12 | **How do registration and login behave in the details?** | Registering logs the user in. Login email is case-insensitive. A logged-in user opening login or registration is redirected to `/`. | T1.1 |
+| D13 | **Where does a user with a household land?** | The final target of `/` is Screen 4, the Personal Chore Dashboard (§5 step 8). Until T5.2 exists, `/` shows a minimal page with the household name, including right after creating a household. | T1.4, T5.2 |
 
 ## E0 — Foundation
 
 ### T0.1 Configure the project · P0 · S
 - Add `templates/` to `TEMPLATES['DIRS']`, and set `STATICFILES_DIRS` and `STATIC_ROOT`.
 - Read `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS` and `DATABASE_URL` from the environment, and add `.env.example`.
+- Make the documented `uv run` commands work from a local `.env` file, with nothing exported in the shell.
 - Use `dj-database-url` to parse `DATABASE_URL`, falling back to the local SQLite file when it isn't set (D9).
 
 **Done when:**
-- [ ] The hard-coded `SECRET_KEY` is gone **before the first commit of `config/`**, because that file is currently untracked.
-- [ ] `manage.py check` passes using only values from `.env.example`.
-- [ ] Local development uses SQLite with no `DATABASE_URL` set.
-- [ ] `USE_TZ = True` and `TIME_ZONE = 'UTC'` are still set (§7.3).
+- [x] `config/settings.py` has no `SECRET_KEY` value or fallback, and no file git would commit, apart from this backlog, contains the text `django-insecure`. This must be true **before the first commit of `config/`**, because that file is currently untracked.
+- [x] With `SECRET_KEY` unset and no `.env` file, `uv run python manage.py check` exits non-zero.
+- [x] `.env.example` lists `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS` and `DATABASE_URL` with placeholder values only. Git ignores `.env` and doesn't ignore `.env.example`.
+- [x] After copying `.env.example` to `.env`, with nothing exported in the shell, `uv run python manage.py check` passes.
+- [x] A variable set in the shell takes priority over the same variable in `.env`.
+- [x] `DEBUG=True` gives `DEBUG` as `True` and `DEBUG=False` gives `False`. Two hosts in `ALLOWED_HOSTS`, in the format `.env.example` shows, give a list of both.
+- [x] With `DATABASE_URL` unset or empty, the database is SQLite at `db.sqlite3` in the project root. With it set to another SQLite URL, the database is that file (D9).
+- [x] `dj-database-url` is in `pyproject.toml`, and `uv lock --check` passes (D9).
+- [x] `TEMPLATES['DIRS']` includes `templates/` and `STATICFILES_DIRS` includes `static/`. `manage.py collectstatic --noinput` writes to `STATIC_ROOT` and leaves `git status --short` unchanged.
+- [x] `USE_TZ = True` and `TIME_ZONE = 'UTC'` are still set (§7.3).
 
 ### T0.2 Add a custom user model · P0 · S
 Depends on: T0.1
@@ -66,14 +77,23 @@ Depends on: T0.1
 - Set `AUTH_USER_MODEL`.
 
 **Done when:**
-- [ ] This is the first migration applied. Swapping the user model later is difficult, so it has to happen before any other app migrates.
+- [ ] `AUTH_USER_MODEL` is `accounts.User`, and `manage.py migrate` succeeds on an empty database.
+- [ ] `manage.py showmigrations --plan` lists `accounts.0001_initial` before `admin.0001_initial`, and no other project app has a migration yet. Swapping the user model later is difficult, so it has to happen first.
+- [ ] A user created with an email and password, and no username, can be authenticated with that email and password (D8).
+- [ ] `manage.py createsuperuser` asks for an email and doesn't ask for a username (D8).
+- [ ] The database rejects a second user whose email differs from an existing one only by letter case, using a case-insensitive unique constraint (D8).
+- [ ] Creating a user with an empty email is rejected.
 
 ### T0.3 Set up the test tools · P0 · S
+Depends on: T0.1, T0.2
+
 - Add `pytest`, `pytest-django` and `factory-boy` as uv dev dependencies.
 - Add pytest settings to `pyproject.toml`, and shared factories to `tests/`.
 
 **Done when:**
-- [ ] `uv run pytest` finds and runs a smoke test.
+- [ ] `pytest`, `pytest-django` and `factory-boy` are dev dependencies in `pyproject.toml`, and `uv lock --check` passes.
+- [ ] With `.env` copied from `.env.example`, `uv run pytest` with no extra arguments finds at least one test in `tests/`, runs it and exits 0.
+- [ ] A smoke test saves a user from a shared factory in `tests/` to the test database and reads it back. Calling the factory twice gives two users with different emails.
 
 ### T0.4 Set up code quality and CI · P1 · S
 Depends on: T0.3
@@ -82,29 +102,51 @@ Depends on: T0.3
 - Add a GitHub Actions workflow that runs lint, `manage.py makemigrations --check` and pytest.
 
 **Done when:**
-- [ ] CI runs on every pull request and fails if a migration is missing.
+- [ ] `ruff` is a dev dependency configured in `pyproject.toml`, `uv lock --check` passes, and `uv run ruff check .` exits 0.
+- [ ] A workflow in `.github/workflows/` triggers on `pull_request` with no branch filter.
+- [ ] The workflow installs from `uv.lock`, then runs `ruff check`, `manage.py makemigrations --check` and `pytest`. None of these steps uses `continue-on-error`, so a failure in any of them fails the run.
+- [ ] The workflow defines the environment values it needs and uses no GitHub repository secrets. With only those values set and no `.env` file, its three commands exit 0 locally.
+- [ ] In a throwaway copy of the repository outside the working tree, adding a model field without a migration makes the workflow's `makemigrations --check` command exit non-zero.
 
-### T0.5 Build the base layout · P0 · M
+### T0.5 Build the base layout · P0 · S
 Depends on: T0.1
 
-- Create `base.html` with navigation, Django messages and a mobile-friendly stylesheet.
+- Create `base.html` with a navigation area, Django messages and a mobile-friendly stylesheet. T1.1 and T1.7 add the links, because the pages and user states they depend on don't exist yet.
 - Add 403 and 404 pages.
 
 **Done when:**
-- [ ] Navigation adapts to the user's state: logged out, no household, member or admin.
+- [ ] A page that extends `base.html` shows a navigation area with the name "Household Chores Manager", includes a viewport meta tag and loads the project stylesheet from `static/`.
+- [ ] A Django message set by a view appears on the next rendered page and not on the page after that.
+- [ ] With `DEBUG=False`, a view that raises `PermissionDenied` returns status 403 with the custom 403 page, which extends `base.html`.
+- [ ] With `DEBUG=False`, an unknown URL returns status 404 with the custom 404 page, which extends `base.html`.
+- [ ] The custom 404 page has no horizontal scrolling at a width of 360 px (D10).
+
+No screens exist yet, so test-only views can prove these criteria. To check the width by hand, use `DEBUG=False` and `runserver --insecure`, so that the 404 page appears with its stylesheet.
 
 ## E1 — Accounts and Households
 
 ### T1.1 Registration, login and logout · P0 · M
 Depends on: T0.2, T0.5
 
-- Build Screen 1 using Django's auth views and a registration form.
+- Build Screen 1 using Django's auth views and a registration form that asks for an email, a display name and a password (D11). Password reset and email verification aren't included, because §4 lists only registering and logging in, and the MVP sends no email (§8).
+- Add `/` as the place users go after logging in. T1.4 adds what it does for logged-in users.
 - Honour a safe `next` redirect, which the invitation flow needs (T2.3).
 
 **Done when:**
-- [ ] Users can register, log in and log out, and passwords go through the configured validators.
-- [ ] Duplicate emails are rejected regardless of letter case.
-- [ ] An external `next` URL is ignored.
+- [ ] Registering with a valid email, display name and password creates one user with that display name and a hashed password. The form doesn't ask for a username (§4, D8, D11).
+- [ ] A blank or whitespace-only display name is rejected with an error on the form, and no user is created (D11).
+- [ ] A password that fails a configured validator, such as `12345678`, is rejected with an error on the form, and no user is created.
+- [ ] A blank or malformed email is rejected with an error on the form, and no user is created.
+- [ ] An email that differs from an existing one only by letter case is rejected with an error on the form, and no second user is created (D8).
+- [ ] Registering logs the new user in. With no `next`, it sends them to `/` (D12).
+- [ ] Logging in with the correct email and password starts a session (§4, D8).
+- [ ] Logging in with the registered email in different letter case, such as `Sam@Example.com` for `sam@example.com`, starts a session (D12).
+- [ ] A logged-in user requesting the login or registration page is redirected to `/` (D12).
+- [ ] A wrong password or an unknown email shows an error, and the user stays logged out.
+- [ ] A POST to logout ends the session. A GET to logout doesn't end it.
+- [ ] Logging in with no `next` sends the user to `/`. A logged-out user requesting `/` is redirected to login, and a logged-in user requesting it gets a status below 400.
+- [ ] A user who logs in or registers with an internal `next` arrives at that URL once logged in (T2.3).
+- [ ] An external `next`, such as `https://evil.example/` or `//evil.example/`, is ignored on both login and registration.
 
 ### T1.2 Household and membership models · P0 · M
 Depends on: T0.2
@@ -114,28 +156,48 @@ Depends on: T0.2
 - Add database constraints as described below.
 
 **Done when:**
-- [ ] A partial unique constraint allows one active membership per user (§7.1).
-- [ ] A partial unique constraint allows one active admin per household (§7.1).
-- [ ] Invalid time zone names are rejected.
+- [ ] The database rejects a second active membership for a user, using a partial unique constraint (§7.1).
+- [ ] The database rejects a second active admin in a household, using a partial unique constraint (§7.1).
+- [ ] Inactive rows don't count towards either constraint. A user who has left can hold a new active membership, and a household whose former admin has an inactive row can have a new active admin (§7.5).
+- [ ] Model validation accepts `America/New_York` and `America/Port-au-Prince`, and rejects a blank time zone and `Mars/Base` (§7.3).
+- [ ] Model validation rejects a blank or whitespace-only household name, a missing `generation_time` and a role other than admin or member.
+- [ ] `joined_at` is set when a membership is created, and `is_active` is true by default.
+- [ ] Deleting a user or household that has a membership row fails, and the row stays, including when the membership is inactive (§7.8).
 
 ### T1.3 Household access control · P0 · S
-Depends on: T1.2
+Depends on: T1.2, T1.4
 
 - Add `household_member_required` and `household_admin_required` helpers.
 - Fetch data through the current user's household, never through a household ID from the URL.
 
 **Done when:**
-- [ ] Other households' data returns 404, a member using an admin action gets 403, and users without a household are redirected to Screen 2.
+- [ ] A logged-out user requesting a view with either helper is redirected to login, with the requested path as `next`.
+- [ ] A user with no household is redirected to Screen 2 by either helper. This includes a user whose only membership is inactive.
+- [ ] A member gets status 200 from a member view and status 403 from an admin view, on both GET and POST (§3).
+- [ ] An admin gets status 200 from both a member view and an admin view (§3).
+- [ ] A member or admin requesting another household's record by its ID gets status 404, and the same request for a record in their own household succeeds (§11).
+- [ ] A household ID in the URL, query string or POST data doesn't change which household the helpers provide (§11).
+
+Few household screens exist yet, so test-only views can prove these criteria.
 
 ### T1.4 Create or Join screen · P0 · M
-Depends on: T1.2, T1.3, T0.5
+Depends on: T0.5, T1.1, T1.2
 
 - Build Screen 2 with household name, time zone and generation time. T2.3 adds the option to join with an invitation link.
 - Creating a household also makes the creator its admin, in a single transaction.
+- Until T5.2 exists, make `/` show a minimal page with the household name to a user with a household (D13).
 
 **Done when:**
-- [ ] A user who already has a household can't create another.
-- [ ] Time zones are chosen from a list of valid IANA names.
+- [ ] A logged-out user requesting Screen 2 is redirected to login, with Screen 2 as `next`.
+- [ ] A logged-in user with no household who requests `/` is redirected to Screen 2.
+- [ ] A member or admin requesting `/` gets status 200 and a page in the base layout that shows their household's name (D13).
+- [ ] Submitting a valid form creates one household with the submitted values, and one active membership making the creator its admin (§3, §7.1). The creator is then redirected to `/` and sees the new household's name (D13).
+- [ ] If creating the membership fails, no household is saved, so no household exists without an active admin (§7.1).
+- [ ] A POST from a user who already has an active membership, including a double submission, creates no household or membership and changes nothing (§7.1).
+- [ ] A user whose only membership is inactive can create a household (§7.5).
+- [ ] The time zone field offers a list of valid IANA names that includes `America/New_York` and `America/Port-au-Prince` (§7.3).
+- [ ] A POST with a time zone outside that list, such as `Mars/Base`, shows an error and creates nothing (§7.3).
+- [ ] A blank or whitespace-only name, or a missing or invalid generation time, such as `25:00`, shows an error and creates nothing.
 
 ### T1.5 Show times in the household's time zone · P0 · S
 Depends on: T1.2
@@ -143,16 +205,41 @@ Depends on: T1.2
 - Add middleware that activates the current household's time zone for each request.
 
 **Done when:**
-- [ ] Timestamps display in household time while the database stores UTC (§7.3).
+- [ ] For a member of an `America/New_York` household, a stored `2026-01-15 12:00 UTC` displays as 07:00 and a stored `2026-07-15 12:00 UTC` displays as 08:00, and both values stay in UTC in the database (§7.3).
+- [ ] A logged-out user, a user with no household and a user whose only membership is inactive see that same value in UTC.
+- [ ] A household's time zone doesn't carry over: a logged-out request straight after a member's request displays times in UTC.
+- [ ] After a household's time zone changes, its members' next request uses the new time zone.
+
+No screen displays a timestamp yet, so a test-only view can prove these criteria.
 
 ### T1.6 Household Settings screen · P0 · S
-Depends on: T1.3, T1.5
+Depends on: T0.5, T1.3, T1.5
 
 - Build Screen 7, where the admin edits the name, time zone and generation time.
 
 **Done when:**
-- [ ] The screen is admin-only.
-- [ ] Changes don't cause a second run for the current local date (D4).
+- [ ] The admin sees the household's current name, time zone and generation time in the form (§7.2).
+- [ ] Saving valid changes stores all three values on the admin's own household and shows a success message. Other households don't change (§7.2, §11).
+- [ ] A logged-out user is redirected to login, and a user with no household is redirected to Screen 2.
+- [ ] A member gets status 403 on both GET and POST, and a member's POST changes nothing (§3).
+- [ ] An invalid time zone, a blank or whitespace-only name, or a missing or invalid generation time shows an error and saves nothing (§7.3).
+- [ ] Changing only the time zone leaves the generation time's clock value unchanged, because it means local time in the new zone (§7.2, §7.3).
+- [ ] Saving updates only these three fields and doesn't start assignment generation (D4). T4.3 proves that no second run happens.
+
+### T1.7 Navigation for each user state · P0 · S
+Depends on: T1.1, T1.4, T1.6
+
+- Add the navigation links for each user state to `base.html`.
+- Each screen task from E2 onward adds its own link, as these criteria only cover the screens M2 delivers.
+
+**Done when:**
+- [ ] Logged-out users see the login and registration links, and no other links.
+- [ ] Logged-in users with no household, including those whose only membership is inactive, see the Create or Join link and the logout control.
+- [ ] Members see the logout control, and no Create or Join or Household Settings link.
+- [ ] Admins see the Household Settings link and the logout control, and no Create or Join link.
+- [ ] The logout control sends a POST (T1.1).
+- [ ] Every link above returns status 200 for the user who sees it.
+- [ ] At a width of 360 px, Screens 1, 2 and 7 and the `/` page have no horizontal scrolling, with the navigation for each user state that can open them (D10).
 
 ## E2 — Invitations and Members
 
@@ -285,6 +372,7 @@ Depends on: T4.2
 - [ ] Earlier pending assignments aren't changed (§7.6).
 - [ ] An error rolls back the whole household's run, including its `GenerationRun`, so the next cron run retries it.
 - [ ] Earlier days aren't backfilled (D3).
+- [ ] After today's run, changing the household's generation time or time zone creates no second run for that local date, and the new settings apply from the next one (D4).
 
 ### T4.4 Find households that are due · P0 · S
 Depends on: T4.3
@@ -331,8 +419,10 @@ Depends on: T5.1, T1.5
 
 - Build Screen 4 with sections for today's chores and pending chores from earlier days, showing each one's original date.
 - "Today" means the household's local date.
+- Make this screen the target of `/`, replacing the minimal page from T1.4 (D13).
 
 **Done when:**
+- [ ] A member or admin requesting `/` reaches this screen, and the minimal page from T1.4 is gone (§5 step 8, D13).
 - [ ] It shows only the logged-in member's assignments.
 - [ ] Several pending assignments for the same chore on different days all appear (§7.6).
 - [ ] New users see a useful message before their first generation.
@@ -465,7 +555,7 @@ Each milestone ends with something you can demonstrate.
 | Milestone | Tasks | Demo |
 |---|---|---|
 | **M1 Skeleton** | T0.1–T0.3, T0.5, T0.4 | The project runs, and tests and CI pass |
-| **M2 Household** | T1.1–T1.6 | Register, create a household and change its settings |
+| **M2 Household** | T1.1, T1.2, T1.4, T1.3, T1.5, T1.6, T1.7 | Register, create a household and change its settings |
 | **M3 Membership** | T2.1–T2.4, T2.6 | Invite someone, have them join and transfer the admin role |
 | **M4 Chores** | T3.1–T3.3 | The admin manages the chore list |
 | **M5 Rotation** | T4.1–T4.5, T2.5, T4.6 | The command generates fair assignments |
@@ -473,7 +563,7 @@ Each milestone ends with something you can demonstrate.
 | **M7 Feedback** | T6.1–T6.4 | History and notifications work |
 | **M8 Release** | T8.1, T7.1, T7.2, T8.2, T8.3, T7.3, T8.4 | The deployed app passes the §11 check |
 
-T2.5 moves to M5 because cancelling assignments needs the `Assignment` model from T4.1.
+T2.5 moves to M5 because cancelling assignments needs the `Assignment` model from T4.1. T1.4 comes before T1.3 because the helpers redirect users with no household to Screen 2.
 
 **Highest-risk tasks:** T4.2, T4.3 and T4.4 hold most of the logic that is hard to get right.
 
