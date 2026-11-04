@@ -1,0 +1,85 @@
+/* Base layout. Pages must not scroll sideways at a width of 360 px (D10), so
+   nothing here has a fixed width and long text wraps. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f7f7f5;
+  color: #222;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+img,
+table {
+  max-width: 100%;
+}
+
+h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0 0 1rem;
+}
+
+.site-header {
+  background: #24505c;
+  color: #fff;
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.site-name {
+  font-weight: 600;
+}
+
+.site-main {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.messages {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.message {
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-left: 4px solid #5b6b70;
+  background: #eceeee;
+}
+
+.message.success {
+  border-color: #2e7d4f;
+  background: #e6f3ea;
+}
+
+.message.warning {
+  border-color: #a86a00;
+  background: #fbf1dd;
+}
+
+.message.error {
+  border-color: #b3261e;
+  background: #fbe9e7;
+}

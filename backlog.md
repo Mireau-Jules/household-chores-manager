@@ -119,11 +119,11 @@ Depends on: T0.1
 - Add 403 and 404 pages.
 
 **Done when:**
-- [ ] A page that extends `base.html` shows a navigation area with the name "Household Chores Manager", includes a viewport meta tag and loads the project stylesheet from `static/`.
-- [ ] A Django message set by a view appears on the next rendered page and not on the page after that.
-- [ ] With `DEBUG=False`, a view that raises `PermissionDenied` returns status 403 with the custom 403 page, which extends `base.html`.
-- [ ] With `DEBUG=False`, an unknown URL returns status 404 with the custom 404 page, which extends `base.html`.
-- [ ] The custom 404 page has no horizontal scrolling at a width of 360 px (D10).
+- [x] A page that extends `base.html` shows a navigation area with the name "Household Chores Manager", includes a viewport meta tag and loads the project stylesheet from `static/`.
+- [x] A Django message set by a view appears on the next rendered page and not on the page after that.
+- [x] With `DEBUG=False`, a view that raises `PermissionDenied` returns status 403 with the custom 403 page, which extends `base.html`.
+- [x] With `DEBUG=False`, an unknown URL returns status 404 with the custom 404 page, which extends `base.html`.
+- [x] The custom 404 page has no horizontal scrolling at a width of 360 px (D10).
 
 No screens exist yet, so test-only views can prove these criteria. To check the width by hand, use `DEBUG=False` and `runserver --insecure`, so that the 404 page appears with its stylesheet.
 
