@@ -8,9 +8,9 @@ A Django web app that coordinates household chores through automatically generat
 |---|---|
 | [`_docs/plan.md`](_docs/plan.md) | Product scope, business rules (§7), out-of-scope features (§8) and success criteria (§11) |
 | [`_docs/process.md`](_docs/process.md) | The workflow and orchestrator loop between the PM, Software Engineer and QA Engineer |
-| [`backlog.md`](backlog.md) | Tasks, their **Done when** criteria, confirmed decisions D1–D9, the rotation algorithm and the suggested order |
+| [`backlog.md`](backlog.md) | Tasks, their **Done when** criteria, confirmed decisions D1–D15, the rotation algorithm and the suggested order |
 
-Decisions D1–D9 and the rotation algorithm in `backlog.md` take priority over `_docs/plan.md`, which takes priority over the rest of the backlog. Only the project owner can confirm a new decision or change an existing one.
+Decisions D1–D15 and the rotation algorithm in `backlog.md` take priority over `_docs/plan.md`, which takes priority over the rest of the backlog. Only the project owner can confirm a new decision or change an existing one.
 
 ## Team roles
 
@@ -29,6 +29,9 @@ Run everything through uv. Don't use `pip` or activate the virtual environment b
 ```bash
 # Install dependencies from the lockfile
 uv sync
+
+# Create your local settings (every manage.py command needs them)
+cp .env.example .env
 
 # Run the Django development server
 uv run python manage.py runserver

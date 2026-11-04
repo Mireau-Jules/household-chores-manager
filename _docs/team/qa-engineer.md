@@ -16,7 +16,7 @@ The QA engineer doesn't fix anything. That means not changing application code, 
 
 Use these in order. If two sources conflict, the higher one wins, and the conflict is worth raising.
 
-1. **Decisions D1–D9 and the rotation algorithm in `backlog.md`.**
+1. **Decisions D1–D15 and the rotation algorithm in `backlog.md`.**
 2. **[`_docs/plan.md`](../plan.md).** Especially the business rules (§7), scope limits (§8) and success criteria (§11).
 3. **The task in `backlog.md`.** Its **Done when** criteria are what QA verifies.
 
