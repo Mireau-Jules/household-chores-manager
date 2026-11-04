@@ -32,7 +32,7 @@ Source: [`_docs/plan.md`](_docs/plan.md). References such as §7.5 point to sect
 
 ## Decisions
 
-The plan left these points open or in tension. All thirteen were confirmed on 2026-11-03, and the tasks below follow them.
+The plan left these points open or in tension. All fifteen were confirmed on 2026-11-03, and the tasks below follow them.
 
 | # | Question | Decision | Affects |
 |---|---|---|---|
@@ -49,6 +49,8 @@ The plan left these points open or in tension. All thirteen were confirmed on 20
 | D11 | **How do members identify each other?** D8 covers login only, but §7.8 and Screens 3, 6 and 8 show the assigned member. | Registration requires a display name, which is shown everywhere instead of the email. | T1.1, T2.4, T5.3, T6.1 |
 | D12 | **How do registration and login behave in the details?** | Registering logs the user in. Login email is case-insensitive. A logged-in user opening login or registration is redirected to `/`. | T1.1 |
 | D13 | **Where does a user with a household land?** | The final target of `/` is Screen 4, the Personal Chore Dashboard (§5 step 8). Until T5.2 exists, `/` shows a minimal page with the household name, including right after creating a household. | T1.4, T5.2 |
+| D14 | **Can an email contain non-ASCII characters?** SQLite's `LOWER()` folds only ASCII, so the case rules in D8 and D12 couldn't hold for internationalised domains. | No. An email with any non-ASCII character is rejected, so people with internationalised-domain addresses can't register. Accepted emails contain only ASCII letters, which D8 and D12 cover. | T0.2, T1.1 |
+| D15 | **What happens when a user who already has a household opens Screen 2?** | They are redirected to `/`, whatever `/` shows at the time (D13). | T1.4 |
 
 ## E0 — Foundation
 
@@ -81,8 +83,10 @@ Depends on: T0.1
 - [ ] `manage.py showmigrations --plan` lists `accounts.0001_initial` before `admin.0001_initial`, and no other project app has a migration yet. Swapping the user model later is difficult, so it has to happen first.
 - [ ] A user created with an email and password, and no username, can be authenticated with that email and password (D8).
 - [ ] `manage.py createsuperuser` asks for an email and doesn't ask for a username (D8).
-- [ ] The database rejects a second user whose email differs from an existing one only by letter case, using a case-insensitive unique constraint (D8).
-- [ ] Creating a user with an empty email is rejected.
+- [ ] The database rejects a second user whose email differs from an existing one only in the letter case of ASCII letters, using a case-insensitive unique constraint (D8). The constraint doesn't have to fold non-ASCII letters, because accepted emails can't contain them (D14).
+- [ ] An email with a non-ASCII character in the local part or the domain, such as `sam@éxample.com`, is rejected by the user manager's `create_user` and `create_superuser`, by model validation and by `manage.py createsuperuser`, and no user is created. An all-ASCII domain, such as `sam@xn--xample-9ua.com`, isn't rejected by this rule. A direct `User.objects.create()` isn't covered and no database-level rejection is required, because it skips validation and no user-facing route uses it (D14).
+- [ ] `manage.py createsuperuser` given an email that differs from an existing one only in the letter case of ASCII letters behaves as it does for an exact duplicate: it reports the email as taken and asks again, with no traceback and no user created.
+- [ ] An empty or whitespace-only email is rejected by the user manager's `create_user` and `create_superuser`, by model validation and by `manage.py createsuperuser`. A direct `User.objects.create()` isn't covered, because it skips validation and no user-facing route uses it.
 
 ### T0.3 Set up the test tools · P0 · S
 Depends on: T0.1, T0.2
@@ -137,12 +141,13 @@ Depends on: T0.2, T0.5
 - [ ] A blank or whitespace-only display name is rejected with an error on the form, and no user is created (D11).
 - [ ] A password that fails a configured validator, such as `12345678`, is rejected with an error on the form, and no user is created.
 - [ ] A blank or malformed email is rejected with an error on the form, and no user is created.
+- [ ] An email with a non-ASCII character in the local part or the domain, such as `sam@éxample.com`, is rejected with an error on the registration form, and no user is created (D14).
 - [ ] An email that differs from an existing one only by letter case is rejected with an error on the form, and no second user is created (D8).
 - [ ] Registering logs the new user in. With no `next`, it sends them to `/` (D12).
 - [ ] Logging in with the correct email and password starts a session (§4, D8).
 - [ ] Logging in with the registered email in different letter case, such as `Sam@Example.com` for `sam@example.com`, starts a session (D12).
 - [ ] A logged-in user requesting the login or registration page is redirected to `/` (D12).
-- [ ] A wrong password or an unknown email shows an error, and the user stays logged out.
+- [ ] A wrong password, an unknown email or an email with a non-ASCII character shows an error, and the user stays logged out (D14).
 - [ ] A POST to logout ends the session. A GET to logout doesn't end it.
 - [ ] Logging in with no `next` sends the user to `/`. A logged-out user requesting `/` is redirected to login, and a logged-in user requesting it gets a status below 400.
 - [ ] A user who logs in or registers with an internal `next` arrives at that URL once logged in (T2.3).
@@ -193,6 +198,7 @@ Depends on: T0.5, T1.1, T1.2
 - [ ] A member or admin requesting `/` gets status 200 and a page in the base layout that shows their household's name (D13).
 - [ ] Submitting a valid form creates one household with the submitted values, and one active membership making the creator its admin (§3, §7.1). The creator is then redirected to `/` and sees the new household's name (D13).
 - [ ] If creating the membership fails, no household is saved, so no household exists without an active admin (§7.1).
+- [ ] A user with an active membership who opens Screen 2 is redirected to `/` (D15).
 - [ ] A POST from a user who already has an active membership, including a double submission, creates no household or membership and changes nothing (§7.1).
 - [ ] A user whose only membership is inactive can create a household (§7.5).
 - [ ] The time zone field offers a list of valid IANA names that includes `America/New_York` and `America/Port-au-Prince` (§7.3).
@@ -514,6 +520,7 @@ Depends on: T0.1
 **Done when:**
 - [ ] All migrations and tests pass on PostgreSQL.
 - [ ] The concurrency tests for T2.2 and T4.3 run on PostgreSQL, because SQLite doesn't exercise row locking the same way.
+- [ ] The email letter-case tests for T0.2 and T1.1 run on PostgreSQL, and the verification report states the database locale they ran under, because case folding can depend on it.
 
 ### T8.2 Build the Docker image · P0 · S
 Depends on: T8.1
