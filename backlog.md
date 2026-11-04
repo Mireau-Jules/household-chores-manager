@@ -95,9 +95,9 @@ Depends on: T0.1, T0.2
 - Add pytest settings to `pyproject.toml`, and shared factories to `tests/`.
 
 **Done when:**
-- [ ] `pytest`, `pytest-django` and `factory-boy` are dev dependencies in `pyproject.toml`, and `uv lock --check` passes.
-- [ ] With `.env` copied from `.env.example`, `uv run pytest` with no extra arguments finds at least one test in `tests/`, runs it and exits 0.
-- [ ] A smoke test saves a user from a shared factory in `tests/` to the test database and reads it back. Calling the factory twice gives two users with different emails.
+- [x] `pytest`, `pytest-django` and `factory-boy` are dev dependencies in `pyproject.toml`, and `uv lock --check` passes.
+- [x] With `.env` copied from `.env.example`, `uv run pytest` with no extra arguments finds at least one test in `tests/`, runs it and exits 0.
+- [x] A smoke test saves a user from a shared factory in `tests/` to the test database and reads it back. Calling the factory twice gives two users with different emails.
 
 ### T0.4 Set up code quality and CI · P1 · S
 Depends on: T0.3
