@@ -59,16 +59,16 @@ The plan left these points open or in tension. All thirteen were confirmed on 20
 - Use `dj-database-url` to parse `DATABASE_URL`, falling back to the local SQLite file when it isn't set (D9).
 
 **Done when:**
-- [ ] `config/settings.py` has no `SECRET_KEY` value or fallback, and no file git would commit, apart from this backlog, contains the text `django-insecure`. This must be true **before the first commit of `config/`**, because that file is currently untracked.
-- [ ] With `SECRET_KEY` unset and no `.env` file, `uv run python manage.py check` exits non-zero.
-- [ ] `.env.example` lists `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS` and `DATABASE_URL` with placeholder values only. Git ignores `.env` and doesn't ignore `.env.example`.
-- [ ] After copying `.env.example` to `.env`, with nothing exported in the shell, `uv run python manage.py check` passes.
-- [ ] A variable set in the shell takes priority over the same variable in `.env`.
-- [ ] `DEBUG=True` gives `DEBUG` as `True` and `DEBUG=False` gives `False`. Two hosts in `ALLOWED_HOSTS`, in the format `.env.example` shows, give a list of both.
-- [ ] With `DATABASE_URL` unset or empty, the database is SQLite at `db.sqlite3` in the project root. With it set to another SQLite URL, the database is that file (D9).
-- [ ] `dj-database-url` is in `pyproject.toml`, and `uv lock --check` passes (D9).
-- [ ] `TEMPLATES['DIRS']` includes `templates/` and `STATICFILES_DIRS` includes `static/`. `manage.py collectstatic --noinput` writes to `STATIC_ROOT` and leaves `git status --short` unchanged.
-- [ ] `USE_TZ = True` and `TIME_ZONE = 'UTC'` are still set (§7.3).
+- [x] `config/settings.py` has no `SECRET_KEY` value or fallback, and no file git would commit, apart from this backlog, contains the text `django-insecure`. This must be true **before the first commit of `config/`**, because that file is currently untracked.
+- [x] With `SECRET_KEY` unset and no `.env` file, `uv run python manage.py check` exits non-zero.
+- [x] `.env.example` lists `SECRET_KEY`, `DEBUG`, `ALLOWED_HOSTS` and `DATABASE_URL` with placeholder values only. Git ignores `.env` and doesn't ignore `.env.example`.
+- [x] After copying `.env.example` to `.env`, with nothing exported in the shell, `uv run python manage.py check` passes.
+- [x] A variable set in the shell takes priority over the same variable in `.env`.
+- [x] `DEBUG=True` gives `DEBUG` as `True` and `DEBUG=False` gives `False`. Two hosts in `ALLOWED_HOSTS`, in the format `.env.example` shows, give a list of both.
+- [x] With `DATABASE_URL` unset or empty, the database is SQLite at `db.sqlite3` in the project root. With it set to another SQLite URL, the database is that file (D9).
+- [x] `dj-database-url` is in `pyproject.toml`, and `uv lock --check` passes (D9).
+- [x] `TEMPLATES['DIRS']` includes `templates/` and `STATICFILES_DIRS` includes `static/`. `manage.py collectstatic --noinput` writes to `STATIC_ROOT` and leaves `git status --short` unchanged.
+- [x] `USE_TZ = True` and `TIME_ZONE = 'UTC'` are still set (§7.3).
 
 ### T0.2 Add a custom user model · P0 · S
 Depends on: T0.1
