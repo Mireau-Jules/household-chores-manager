@@ -16,7 +16,7 @@ The engineer doesn't close the task. That means not ticking **Done when** boxes,
 
 Use these in order. If two sources conflict, the higher one wins, and the conflict is worth raising.
 
-1. **Decisions D1–D9 and the rotation algorithm in `backlog.md`.**
+1. **Decisions D1–D15 and the rotation algorithm in `backlog.md`.**
 2. **[`_docs/plan.md`](../plan.md).** Especially the business rules (§7), scope limits (§8) and success criteria (§11).
 3. **The task in `backlog.md`.** Its description and **Done when** criteria define what to build.
 4. **The existing code.** Follow its naming, structure and idioms.

@@ -16,7 +16,7 @@ The PM doesn't write code, choose the technical approach beyond what the backlog
 
 Use these in order. If two sources conflict, the higher one wins.
 
-1. **Decisions D1–D9 and the rotation algorithm in `backlog.md`.** These were confirmed on 2026-11-03.
+1. **Decisions D1–D15 and the rotation algorithm in `backlog.md`.** These were confirmed on 2026-11-03.
 2. **[`_docs/plan.md`](../plan.md).** Its business rules (§7), scope limits (§8) and success criteria (§11) define the product.
 3. **The rest of `backlog.md`.** Tasks, dependencies and the suggested order can be refined through grooming.
 
