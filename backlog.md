@@ -79,14 +79,14 @@ Depends on: T0.1
 - Set `AUTH_USER_MODEL`.
 
 **Done when:**
-- [ ] `AUTH_USER_MODEL` is `accounts.User`, and `manage.py migrate` succeeds on an empty database.
-- [ ] `manage.py showmigrations --plan` lists `accounts.0001_initial` before `admin.0001_initial`, and no other project app has a migration yet. Swapping the user model later is difficult, so it has to happen first.
-- [ ] A user created with an email and password, and no username, can be authenticated with that email and password (D8).
-- [ ] `manage.py createsuperuser` asks for an email and doesn't ask for a username (D8).
-- [ ] The database rejects a second user whose email differs from an existing one only in the letter case of ASCII letters, using a case-insensitive unique constraint (D8). The constraint doesn't have to fold non-ASCII letters, because accepted emails can't contain them (D14).
-- [ ] An email with a non-ASCII character in the local part or the domain, such as `sam@éxample.com`, is rejected by the user manager's `create_user` and `create_superuser`, by model validation and by `manage.py createsuperuser`, and no user is created. An all-ASCII domain, such as `sam@xn--xample-9ua.com`, isn't rejected by this rule. A direct `User.objects.create()` isn't covered and no database-level rejection is required, because it skips validation and no user-facing route uses it (D14).
-- [ ] `manage.py createsuperuser` given an email that differs from an existing one only in the letter case of ASCII letters behaves as it does for an exact duplicate: it reports the email as taken and asks again, with no traceback and no user created.
-- [ ] An empty or whitespace-only email is rejected by the user manager's `create_user` and `create_superuser`, by model validation and by `manage.py createsuperuser`. A direct `User.objects.create()` isn't covered, because it skips validation and no user-facing route uses it.
+- [x] `AUTH_USER_MODEL` is `accounts.User`, and `manage.py migrate` succeeds on an empty database.
+- [x] `manage.py showmigrations --plan` lists `accounts.0001_initial` before `admin.0001_initial`, and no other project app has a migration yet. Swapping the user model later is difficult, so it has to happen first.
+- [x] A user created with an email and password, and no username, can be authenticated with that email and password (D8).
+- [x] `manage.py createsuperuser` asks for an email and doesn't ask for a username (D8).
+- [x] The database rejects a second user whose email differs from an existing one only in the letter case of ASCII letters, using a case-insensitive unique constraint (D8). The constraint doesn't have to fold non-ASCII letters, because accepted emails can't contain them (D14).
+- [x] An email with a non-ASCII character in the local part or the domain, such as `sam@éxample.com`, is rejected by the user manager's `create_user` and `create_superuser`, by model validation and by `manage.py createsuperuser`, and no user is created. An all-ASCII domain, such as `sam@xn--xample-9ua.com`, isn't rejected by this rule. A direct `User.objects.create()` isn't covered and no database-level rejection is required, because it skips validation and no user-facing route uses it (D14).
+- [x] `manage.py createsuperuser` given an email that differs from an existing one only in the letter case of ASCII letters behaves as it does for an exact duplicate: it reports the email as taken and asks again, with no traceback and no user created.
+- [x] An empty or whitespace-only email is rejected by the user manager's `create_user` and `create_superuser`, by model validation and by `manage.py createsuperuser`. A direct `User.objects.create()` isn't covered, because it skips validation and no user-facing route uses it.
 
 ### T0.3 Set up the test tools · P0 · S
 Depends on: T0.1, T0.2
